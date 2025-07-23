@@ -6,8 +6,11 @@ import Answers from './components/Answers'
 const App = () => {
   const [question, setQuestion] = useState('')
   const [result, setResult] = useState([])
+  const [loading, setLoading] = useState(false)
 
   const askQuestion = async () => {
+    if (!question.trim()) return
+    setLoading(true)
     try {
       const res = await fetch(URL, {
         method: "POST",
@@ -30,12 +33,20 @@ const App = () => {
       const data = await res.json()
       let responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text
       responseText = responseText.split('* ').map(item => item.trim()).filter(Boolean)
-      setResult(responseText)
+      setResult(prev => [
+        ...prev,
+        { type: 'q', text: question },
+        { type: 'a', text: responseText }
+      ]);
+
+      setQuestion('');
     } catch (err) {
-      console.error("API Error:", err)
-      setResult(["Error: Could not fetch response."])
+      console.error("API Error:", err);
+      setResult(prev => [...prev, { type: 'a', text: ["Error: Could not fetch response."] }]);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="h-screen w-full grid grid-cols-5 bg-zinc-900 text-zinc-300">
@@ -48,12 +59,25 @@ const App = () => {
       <div className="col-span-4 flex flex-col justify-between h-full p-6">
         {/* Output Section */}
         <div className="overflow-y-auto mb-4 max-h-[80vh]">
-          <ul className="space-y-2 text-left">
-            {result.map((item, index) => (
-              <li key={index} className="bg-zinc-700 p-3 rounded-lg shadow hover:bg-zinc-600 transition duration-500">
-                <Answers ans={item} />
-              </li>
-            ))}
+          <ul>
+            {
+              result.map((item, index) =>
+                item.type === 'q' ? (
+                  <li key={index + Math.random()} className="p-1 rounded-lg shadow">
+                    <Answers ans={item.text} index={index} totalResult={1} type="q" />
+                  </li>
+                ) : (
+                  item.text.map((ansItem, ansIndex) => (
+                    <li key={ansIndex + Math.random()} className="p-1 rounded-lg shadow">
+                      <Answers ans={ansItem} index={ansIndex} totalResult={result.length} type="a" />
+                    </li>
+                  ))
+                )
+              )
+            }
+            {loading && (
+              <li className="p-1 text-gray-400 animate-pulse">Thinking...</li>
+            )}
           </ul>
         </div>
 

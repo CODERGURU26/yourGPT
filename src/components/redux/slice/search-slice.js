@@ -16,9 +16,14 @@ const searchSlice = createSlice({
     clearHistory: (state) => {
       state.history = []
       localStorage.removeItem('searchHistory')
+    },
+    deleteHistoryItem: (state, action) => {
+      const index = action.payload;
+      state.history.splice(index, 1);
+      localStorage.setItem("searchHistory", JSON.stringify(state.history));
     }
   }
 })
 
-export const { addToHistory, clearHistory } = searchSlice.actions
+export const { addToHistory, clearHistory , deleteHistoryItem } = searchSlice.actions
 export default searchSlice.reducer

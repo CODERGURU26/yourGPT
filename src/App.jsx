@@ -3,6 +3,7 @@ import { AiOutlineSend } from "react-icons/ai"
 import { RiMenuSearchLine } from "react-icons/ri";
 import { MdDelete } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
+import { GoCopy } from "react-icons/go";
 import { GoSidebarCollapse } from "react-icons/go";
 import { URL } from './contants'
 import Answers from './components/Answers'
@@ -14,6 +15,7 @@ const App = () => {
   const [result, setResult] = useState([])
   const [loading, setLoading] = useState(false)
   const [sideBar, setSideBar] = useState(false)
+  const [copiedIndex , setCopiedIndex] = useState(null)
 
   const dispatch = useDispatch()
   const search = useSelector(state => state.search.history)
@@ -231,8 +233,27 @@ const App = () => {
                   <div className="max-w-xs md:max-w-md lg:max-w-lg xl:max-w-2xl">
                     <div className="bg-zinc-800 border border-zinc-700 p-4 rounded-2xl rounded-bl-md">
                       {item.text.map((ansItem, ansIndex) => (
-                        <div key={ansIndex} className="mb-2 last:mb-0">
+                        <div key={ansIndex} className="mb-2 gap-2 items-center group last:mb-0 flex ">
                           <Answers ans={ansItem} index={ansIndex} totalResult={result.length} type="a" />
+
+                          <button onClick={()=>{
+                            navigator.clipboard.writeText(ansItem)
+                            setCopiedIndex(`${index}-${ansIndex}`)
+                            setTimeout(()=> setCopiedIndex(null),1500)
+                          }}
+                          className=' text-xs text-white
+                           bg-zinc-800 rounded-md duration-300 px-3 py-2
+                            hover:bg-zinc-600 cursor-pointer flex items-center gap-1'
+                          >
+                            <GoCopy />Copy
+                          </button>
+                        {
+                          copiedIndex === `${index}-${ansIndex}` &&
+                          <span
+                          className='text-xs text-green-400'
+                          >Copied!!</span>
+                        }
+                          
                         </div>
                       ))}
                     </div>
